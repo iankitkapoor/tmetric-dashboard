@@ -1,124 +1,116 @@
-<!-- ONLY IMPORTANT CHANGES SHOWN BELOW -->
-<!-- Tera pura UI same rahega, sirf JS updated hai -->
-
 <script>
+// ===== CONFIG =====
 const SUPABASE_URL = "https://sqwwkmbborpjuxrgzoko.supabase.co"
 const SUPABASE_KEY = "sb_publishable_lwlJsuCjxwf4oXoMRQViig_frIh3Ch6"
 
-const PROXY_BASE = "https://tmetric-proxy.hiankitkapoor.workers.dev"
-const USER_ID    = 399254
+const PROXY = "https://tmetric-proxy.hiankitkapoor.workers.dev"
+const USER = 399254
 
-const WORKSPACES = [
-  { id: "241637", name: "Ankit's Workspace",  color: "#f5a88e", tagBg: "#fde8df", tagColor: "#c0551f" },
-  { id: "228817", name: "Leadywaves", color: "#8fad99", tagBg: "#dff0e5", tagColor: "#2e6b47" },
-]
+const WS1 = "241637"
+const WS2 = "228817"
 
-// ====== MOOD SYSTEM (FIXED - DB BASED) ======
+// ===== DATE =====
+const today = () => new Date().toISOString().slice(0,10)
+const yesterday = () => {
+  const d = new Date()
+  d.setDate(d.getDate()-1)
+  return d.toISOString().slice(0,10)
+}
 
-async function saveMood(date, emoji) {
-  await fetch(`${SUPABASE_URL}/rest/v1/moods`, {
-    method: "POST",
-    headers: {
-      "apikey": SUPABASE_KEY,
-      "Authorization": `Bearer ${SUPABASE_KEY}`,
-      "Content-Type": "application/json"
+// ===== FORMAT =====
+const fmt = s => {
+  const h = Math.floor(s/3600)
+  const m = Math.floor((s%3600)/60)
+  return h ? `${h}h ${m}m` : `${m}m`
+}
+
+// ===== FETCH =====
+async function fetchTime(ws, date){
+  const url = `${PROXY}/accounts/${ws}/timeentries/${USER}?startTime=${date}T00:00:00&endTime=${date}T23:59:59&useUtcTime=false`
+  const r = await fetch(url)
+  const d = await r.json()
+
+  return d.reduce((t,e)=>{
+    if(!e.startTime||!e.endTime)return t
+    return t + ((new Date(e.endTime)-new Date(e.startTime))/1000)
+  },0)
+}
+
+// ===== LOAD =====
+async function load(){
+  const t1 = await fetchTime(WS1, today())
+  const t2 = await fetchTime(WS2, today())
+  const total = t1+t2
+
+  const y1 = await fetchTime(WS1, yesterday())
+  const y2 = await fetchTime(WS2, yesterday())
+  const y = y1+y2
+
+  document.getElementById("today").innerText = fmt(total)
+
+  const diff = y ? Math.round(((total-y)/y)*100) : 0
+  document.getElementById("diff").innerText =
+    (diff>=0?"↑ ":"↓ ") + Math.abs(diff) + "% vs yesterday"
+
+  document.getElementById("progress").style.width =
+    Math.min(100,(total/(8*3600))*100)+"%"
+}
+
+// ===== MOOD =====
+const moods = ["😔","😐","🙂","😊","🤩"]
+
+async function saveMood(m){
+  await fetch(`${SUPABASE_URL}/rest/v1/moods`,{
+    method:"POST",
+    headers:{
+      "apikey":SUPABASE_KEY,
+      "Authorization":`Bearer ${SUPABASE_KEY}`,
+      "Content-Type":"application/json"
     },
-    body: JSON.stringify({
-      date: date,
-      emoji: emoji
-    })
+    body:JSON.stringify({date:today(),emoji:m})
   })
 }
 
-async function getMood(date) {
-  const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/moods?date=eq.${date}&select=*`,
-    {
-      headers: {
-        "apikey": SUPABASE_KEY,
-        "Authorization": `Bearer ${SUPABASE_KEY}`
-      }
+async function loadMood(){
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/moods?date=eq.${today()}`,{
+    headers:{
+      "apikey":SUPABASE_KEY,
+      "Authorization":`Bearer ${SUPABASE_KEY}`
     }
-  )
-  const data = await res.json()
-  return data[0]?.emoji || null
+  })
+  const d = await r.json()
+  return d[0]?.emoji
 }
 
-// ====== UPDATED MOOD UI ======
+async function renderMood(){
+  const wrap = document.getElementById("moods")
+  const saved = await loadMood()
 
-async function renderMoodPicker() {
-  const saved = await getMood(todayStr())
-  const wrap  = document.getElementById("mood-grid")
   wrap.innerHTML = ""
 
-  MOODS.forEach(m => {
-    const btn = document.createElement("button")
-    btn.className = "mood-btn" + (saved === m.emoji ? " selected" : "")
-    btn.innerHTML = `<span>${m.emoji}</span><span>${m.label}</span>`
+  moods.forEach(m=>{
+    const b = document.createElement("button")
+    b.innerText = m
+    if(m===saved) b.classList.add("active")
 
-    btn.onclick = async () => {
-      await saveMood(todayStr(), m.emoji)
-      renderMoodPicker()
-      renderLog()
+    b.onclick = async ()=>{
+      await saveMood(m)
+      renderMood()
     }
 
-    wrap.appendChild(btn)
+    wrap.appendChild(b)
   })
 }
 
-// ====== LOAD ALL MOODS ======
-
-async function getAllMoods() {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/moods?select=*`, {
-    headers: {
-      "apikey": SUPABASE_KEY,
-      "Authorization": `Bearer ${SUPABASE_KEY}`
-    }
-  })
-  const data = await res.json()
-  const map = {}
-  data.forEach(m => map[m.date] = m.emoji)
-  return map
+// ===== INIT =====
+function greet(){
+  const h = new Date().getHours()
+  document.getElementById("greet").innerText =
+    h<12?"Good morning":
+    h<17?"Good afternoon":"Good evening"
 }
 
-// ====== UPDATED LOG ======
-
-async function renderLog() {
-  const wrap = document.getElementById("log-rows")
-  const moods = await getAllMoods()
-
-  const rows = Array.from({length: 7}, (_, i) => {
-    const d = new Date()
-    d.setDate(d.getDate()-i)
-    const dateKey = ds(d)
-
-    return {
-      dateKey,
-      label: i===0?"Today":i===1?"Yesterday":d.toLocaleDateString("en-IN"),
-      mood: moods[dateKey] || ""
-    }
-  })
-
-  wrap.innerHTML = rows.map(r => `
-    <div class="log-row">
-      <span>${r.label}</span>
-      <span>${r.mood}</span>
-    </div>
-  `).join("")
-}
-
-// ====== REMOVE TOKEN HARD CODE ======
-
-function getToken() {
-  return localStorage.getItem("tmetric_token")
-}
-
-// ====== INIT ======
-
-;(async function init() {
-  setGreeting()
-  await renderMoodPicker()
-  await renderLog()
-  loadAll()
-})()
+greet()
+load()
+renderMood()
 </script>
