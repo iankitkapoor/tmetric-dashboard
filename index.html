@@ -1,116 +1,64 @@
-<script>
-// ===== CONFIG =====
-const SUPABASE_URL = "https://sqwwkmbborpjuxrgzoko.supabase.co"
-const SUPABASE_KEY = "sb_publishable_lwlJsuCjxwf4oXoMRQViig_frIh3Ch6"
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Work Dashboard</title>
+</head>
 
+<body>
+
+<h1 id="greet"></h1>
+<div id="today">Loading...</div>
+
+<script>
 const PROXY = "https://tmetric-proxy.hiankitkapoor.workers.dev"
 const USER = 399254
 
-const WS1 = "241637"
-const WS2 = "228817"
-
-// ===== DATE =====
-const today = () => new Date().toISOString().slice(0,10)
-const yesterday = () => {
-  const d = new Date()
-  d.setDate(d.getDate()-1)
-  return d.toISOString().slice(0,10)
+function today(){
+  return new Date().toISOString().slice(0,10)
 }
 
-// ===== FORMAT =====
-const fmt = s => {
-  const h = Math.floor(s/3600)
-  const m = Math.floor((s%3600)/60)
-  return h ? `${h}h ${m}m` : `${m}m`
+function fmt(s){
+  const h=Math.floor(s/3600)
+  const m=Math.floor((s%3600)/60)
+  return h?`${h}h ${m}m`:`${m}m`
 }
 
-// ===== FETCH =====
-async function fetchTime(ws, date){
-  const url = `${PROXY}/accounts/${ws}/timeentries/${USER}?startTime=${date}T00:00:00&endTime=${date}T23:59:59&useUtcTime=false`
-  const r = await fetch(url)
-  const d = await r.json()
+async function fetchTime(ws){
+  try{
+    const url=`${PROXY}/accounts/${ws}/timeentries/${USER}?startTime=${today()}T00:00:00&endTime=${today()}T23:59:59&useUtcTime=false`
+    const r=await fetch(url)
+    const d=await r.json()
 
-  return d.reduce((t,e)=>{
-    if(!e.startTime||!e.endTime)return t
-    return t + ((new Date(e.endTime)-new Date(e.startTime))/1000)
-  },0)
+    if(!Array.isArray(d)) return 0
+
+    return d.reduce((t,e)=>{
+      if(!e.startTime||!e.endTime) return t
+      return t+((new Date(e.endTime)-new Date(e.startTime))/1000)
+    },0)
+
+  }catch(e){
+    return 0
+  }
 }
 
-// ===== LOAD =====
 async function load(){
-  const t1 = await fetchTime(WS1, today())
-  const t2 = await fetchTime(WS2, today())
-  const total = t1+t2
-
-  const y1 = await fetchTime(WS1, yesterday())
-  const y2 = await fetchTime(WS2, yesterday())
-  const y = y1+y2
-
-  document.getElementById("today").innerText = fmt(total)
-
-  const diff = y ? Math.round(((total-y)/y)*100) : 0
-  document.getElementById("diff").innerText =
-    (diff>=0?"↑ ":"↓ ") + Math.abs(diff) + "% vs yesterday"
-
-  document.getElementById("progress").style.width =
-    Math.min(100,(total/(8*3600))*100)+"%"
+  const t1=await fetchTime("241637")
+  const t2=await fetchTime("228817")
+  document.getElementById("today").innerText=fmt(t1+t2)
 }
 
-// ===== MOOD =====
-const moods = ["😔","😐","🙂","😊","🤩"]
-
-async function saveMood(m){
-  await fetch(`${SUPABASE_URL}/rest/v1/moods`,{
-    method:"POST",
-    headers:{
-      "apikey":SUPABASE_KEY,
-      "Authorization":`Bearer ${SUPABASE_KEY}`,
-      "Content-Type":"application/json"
-    },
-    body:JSON.stringify({date:today(),emoji:m})
-  })
-}
-
-async function loadMood(){
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/moods?date=eq.${today()}`,{
-    headers:{
-      "apikey":SUPABASE_KEY,
-      "Authorization":`Bearer ${SUPABASE_KEY}`
-    }
-  })
-  const d = await r.json()
-  return d[0]?.emoji
-}
-
-async function renderMood(){
-  const wrap = document.getElementById("moods")
-  const saved = await loadMood()
-
-  wrap.innerHTML = ""
-
-  moods.forEach(m=>{
-    const b = document.createElement("button")
-    b.innerText = m
-    if(m===saved) b.classList.add("active")
-
-    b.onclick = async ()=>{
-      await saveMood(m)
-      renderMood()
-    }
-
-    wrap.appendChild(b)
-  })
-}
-
-// ===== INIT =====
 function greet(){
-  const h = new Date().getHours()
-  document.getElementById("greet").innerText =
+  const h=new Date().getHours()
+  document.getElementById("greet").innerText=
     h<12?"Good morning":
     h<17?"Good afternoon":"Good evening"
 }
 
 greet()
 load()
-renderMood()
 </script>
+
+</body>
+</html>
