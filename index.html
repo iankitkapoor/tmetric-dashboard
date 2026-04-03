@@ -4,30 +4,99 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Work Dashboard</title>
+
+<style>
+body{
+  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+  background:#f7f4f0;
+  padding:20px;
+  color:#1a1714;
+}
+
+.card{
+  background:#fff;
+  padding:20px;
+  border-radius:16px;
+  margin-bottom:16px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.06);
+}
+
+h1{margin-bottom:20px}
+
+.progress{
+  height:6px;
+  background:#eee;
+  border-radius:6px;
+  overflow:hidden;
+  margin-top:10px;
+}
+
+.fill{
+  height:100%;
+  background:#f5a88e;
+  width:0%;
+}
+
+.moods button{
+  font-size:20px;
+  margin:5px;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid #ddd;
+  cursor:pointer;
+}
+
+.moods button.active{
+  border:2px solid #f5a88e;
+}
+</style>
 </head>
 
 <body>
 
 <h1 id="greet"></h1>
-<div id="today">Loading...</div>
+
+<div class="card">
+  <h2>Today</h2>
+  <div id="today">Loading...</div>
+  <div id="diff"></div>
+
+  <div class="progress">
+    <div class="fill" id="progress"></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>State of Mind</h2>
+  <div class="moods" id="moods"></div>
+</div>
 
 <script>
-const PROXY = "https://tmetric-proxy.hiankitkapoor.workers.dev"
-const USER = 399254
+const PROXY="https://tmetric-proxy.hiankitkapoor.workers.dev"
+const USER=399254
 
-function today(){
-  return new Date().toISOString().slice(0,10)
+const SUPABASE_URL="https://sqwwkmbborpjuxrgzoko.supabase.co"
+const SUPABASE_KEY="sb_publishable_lwlJsuCjxwf4oXoMRQViig_frIh3Ch6"
+
+const WS1="241637"
+const WS2="228817"
+
+const today=()=>new Date().toISOString().slice(0,10)
+const yesterday=()=>{
+  const d=new Date()
+  d.setDate(d.getDate()-1)
+  return d.toISOString().slice(0,10)
 }
 
-function fmt(s){
+const fmt=s=>{
   const h=Math.floor(s/3600)
   const m=Math.floor((s%3600)/60)
   return h?`${h}h ${m}m`:`${m}m`
 }
 
-async function fetchTime(ws){
+async function fetchTime(ws,date){
   try{
-    const url=`${PROXY}/accounts/${ws}/timeentries/${USER}?startTime=${today()}T00:00:00&endTime=${today()}T23:59:59&useUtcTime=false`
+    const url=`${PROXY}/accounts/${ws}/timeentries/${USER}?startTime=${date}T00:00:00&endTime=${date}T23:59:59&useUtcTime=false`
     const r=await fetch(url)
     const d=await r.json()
 
@@ -44,9 +113,72 @@ async function fetchTime(ws){
 }
 
 async function load(){
-  const t1=await fetchTime("241637")
-  const t2=await fetchTime("228817")
-  document.getElementById("today").innerText=fmt(t1+t2)
+  const t1=await fetchTime(WS1,today())
+  const t2=await fetchTime(WS2,today())
+  const total=t1+t2
+
+  const y1=await fetchTime(WS1,yesterday())
+  const y2=await fetchTime(WS2,yesterday())
+  const y=y1+y2
+
+  document.getElementById("today").innerText=fmt(total)
+
+  const diff=y?Math.round(((total-y)/y)*100):0
+  document.getElementById("diff").innerText=
+    (diff>=0?"↑ ":"↓ ")+Math.abs(diff)+"% vs yesterday"
+
+  document.getElementById("progress").style.width=
+    Math.min(100,(total/(8*3600))*100)+"%"
+}
+
+const moodList=["😔","😐","🙂","😊","🤩"]
+
+async function saveMood(m){
+  await fetch(`${SUPABASE_URL}/rest/v1/moods`,{
+    method:"POST",
+    headers:{
+      "apikey":SUPABASE_KEY,
+      "Authorization":`Bearer ${SUPABASE_KEY}`,
+      "Content-Type":"application/json"
+    },
+    body:JSON.stringify({date:today(),emoji:m})
+  })
+}
+
+async function getMood(){
+  try{
+    const r=await fetch(`${SUPABASE_URL}/rest/v1/moods?date=eq.${today()}`,{
+      headers:{
+        "apikey":SUPABASE_KEY,
+        "Authorization":`Bearer ${SUPABASE_KEY}`
+      }
+    })
+    const d=await r.json()
+    return d[0]?.emoji
+  }catch(e){
+    return null
+  }
+}
+
+async function renderMood(){
+  const wrap=document.getElementById("moods")
+  const saved=await getMood()
+
+  wrap.innerHTML=""
+
+  moodList.forEach(m=>{
+    const b=document.createElement("button")
+    b.innerText=m
+
+    if(m===saved) b.classList.add("active")
+
+    b.onclick=async ()=>{
+      await saveMood(m)
+      renderMood()
+    }
+
+    wrap.appendChild(b)
+  })
 }
 
 function greet(){
@@ -58,6 +190,7 @@ function greet(){
 
 greet()
 load()
+renderMood()
 </script>
 
 </body>
