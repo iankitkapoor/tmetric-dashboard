@@ -1,0 +1,124 @@
+<!-- ONLY IMPORTANT CHANGES SHOWN BELOW -->
+<!-- Tera pura UI same rahega, sirf JS updated hai -->
+
+<script>
+const SUPABASE_URL = "https://sqwwkmbborpjuxrgzoko.supabase.co"
+const SUPABASE_KEY = "sb_publishable_lwlJsuCjxwf4oXoMRQViig_frIh3Ch6"
+
+const PROXY_BASE = "https://tmetric-proxy.hiankitkapoor.workers.dev"
+const USER_ID    = 399254
+
+const WORKSPACES = [
+  { id: "241637", name: "Ankit's Workspace",  color: "#f5a88e", tagBg: "#fde8df", tagColor: "#c0551f" },
+  { id: "228817", name: "Leadywaves", color: "#8fad99", tagBg: "#dff0e5", tagColor: "#2e6b47" },
+]
+
+// ====== MOOD SYSTEM (FIXED - DB BASED) ======
+
+async function saveMood(date, emoji) {
+  await fetch(`${SUPABASE_URL}/rest/v1/moods`, {
+    method: "POST",
+    headers: {
+      "apikey": SUPABASE_KEY,
+      "Authorization": `Bearer ${SUPABASE_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      date: date,
+      emoji: emoji
+    })
+  })
+}
+
+async function getMood(date) {
+  const res = await fetch(
+    `${SUPABASE_URL}/rest/v1/moods?date=eq.${date}&select=*`,
+    {
+      headers: {
+        "apikey": SUPABASE_KEY,
+        "Authorization": `Bearer ${SUPABASE_KEY}`
+      }
+    }
+  )
+  const data = await res.json()
+  return data[0]?.emoji || null
+}
+
+// ====== UPDATED MOOD UI ======
+
+async function renderMoodPicker() {
+  const saved = await getMood(todayStr())
+  const wrap  = document.getElementById("mood-grid")
+  wrap.innerHTML = ""
+
+  MOODS.forEach(m => {
+    const btn = document.createElement("button")
+    btn.className = "mood-btn" + (saved === m.emoji ? " selected" : "")
+    btn.innerHTML = `<span>${m.emoji}</span><span>${m.label}</span>`
+
+    btn.onclick = async () => {
+      await saveMood(todayStr(), m.emoji)
+      renderMoodPicker()
+      renderLog()
+    }
+
+    wrap.appendChild(btn)
+  })
+}
+
+// ====== LOAD ALL MOODS ======
+
+async function getAllMoods() {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/moods?select=*`, {
+    headers: {
+      "apikey": SUPABASE_KEY,
+      "Authorization": `Bearer ${SUPABASE_KEY}`
+    }
+  })
+  const data = await res.json()
+  const map = {}
+  data.forEach(m => map[m.date] = m.emoji)
+  return map
+}
+
+// ====== UPDATED LOG ======
+
+async function renderLog() {
+  const wrap = document.getElementById("log-rows")
+  const moods = await getAllMoods()
+
+  const rows = Array.from({length: 7}, (_, i) => {
+    const d = new Date()
+    d.setDate(d.getDate()-i)
+    const dateKey = ds(d)
+
+    return {
+      dateKey,
+      label: i===0?"Today":i===1?"Yesterday":d.toLocaleDateString("en-IN"),
+      mood: moods[dateKey] || ""
+    }
+  })
+
+  wrap.innerHTML = rows.map(r => `
+    <div class="log-row">
+      <span>${r.label}</span>
+      <span>${r.mood}</span>
+    </div>
+  `).join("")
+}
+
+// ====== REMOVE TOKEN HARD CODE ======
+
+function getToken() {
+  return localStorage.getItem("tmetric_token")
+}
+
+// ====== INIT ======
+
+;(async function init() {
+  setGreeting()
+  await renderMoodPicker()
+  await renderLog()
+  loadAll()
+})()
+</script>
