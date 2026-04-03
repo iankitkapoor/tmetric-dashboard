@@ -3,63 +3,116 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Work Dashboard</title>
+<title>Work OS</title>
 
 <style>
+:root{
+  --bg:#f5f3ef;
+  --card:#ffffffcc;
+  --text:#111;
+  --muted:#888;
+  --accent:#f27c5a;
+}
+
 body{
-  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
-  background:#f7f4f0;
-  padding:20px;
-  color:#1a1714;
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+
+.app{
+  max-width:1000px;
+  margin:auto;
+  padding:40px 20px;
+}
+
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:30px;
+}
+
+.title{
+  font-size:28px;
+  font-weight:600;
+}
+
+.grid{
+  display:grid;
+  gap:20px;
 }
 
 .card{
-  background:#fff;
-  padding:20px;
-  border-radius:16px;
-  margin-bottom:16px;
+  background:var(--card);
+  backdrop-filter:blur(14px);
+  padding:24px;
+  border-radius:20px;
   box-shadow:0 10px 30px rgba(0,0,0,0.06);
 }
 
-h1{margin-bottom:20px}
+.big{
+  font-size:36px;
+  font-weight:600;
+}
+
+.small{
+  color:var(--muted);
+  font-size:14px;
+}
 
 .progress{
   height:6px;
   background:#eee;
   border-radius:6px;
-  overflow:hidden;
-  margin-top:10px;
+  margin-top:12px;
 }
 
 .fill{
   height:100%;
-  background:#f5a88e;
-  width:0%;
+  background:linear-gradient(90deg,#f5a88e,#f27c5a);
+  border-radius:6px;
+}
+
+.moods{
+  display:flex;
+  gap:10px;
+  margin-top:10px;
 }
 
 .moods button{
+  width:50px;
+  height:50px;
+  border-radius:14px;
+  border:none;
+  background:white;
   font-size:20px;
-  margin:5px;
-  padding:10px;
-  border-radius:10px;
-  border:1px solid #ddd;
   cursor:pointer;
+  box-shadow:0 4px 10px rgba(0,0,0,0.05);
 }
 
 .moods button.active{
-  border:2px solid #f5a88e;
+  border:2px solid var(--accent);
+  background:#fff3ef;
 }
 </style>
 </head>
 
 <body>
 
-<h1 id="greet"></h1>
+<div class="app">
+
+<div class="header">
+  <div class="title" id="greet"></div>
+</div>
+
+<div class="grid">
 
 <div class="card">
-  <h2>Today</h2>
-  <div id="today">Loading...</div>
-  <div id="diff"></div>
+  <div class="small">Today</div>
+  <div class="big" id="today">0h</div>
+  <div class="small" id="diff"></div>
 
   <div class="progress">
     <div class="fill" id="progress"></div>
@@ -67,16 +120,17 @@ h1{margin-bottom:20px}
 </div>
 
 <div class="card">
-  <h2>State of Mind</h2>
+  <div class="small">State of Mind</div>
   <div class="moods" id="moods"></div>
+</div>
+
+</div>
+
 </div>
 
 <script>
 const PROXY="https://tmetric-proxy.hiankitkapoor.workers.dev"
 const USER=399254
-
-const SUPABASE_URL="https://sqwwkmbborpjuxrgzoko.supabase.co"
-const SUPABASE_KEY="sb_publishable_lwlJsuCjxwf4oXoMRQViig_frIh3Ch6"
 
 const WS1="241637"
 const WS2="228817"
@@ -99,7 +153,6 @@ async function fetchTime(ws,date){
     const url=`${PROXY}/accounts/${ws}/timeentries/${USER}?startTime=${date}T00:00:00&endTime=${date}T23:59:59&useUtcTime=false`
     const r=await fetch(url)
     const d=await r.json()
-
     if(!Array.isArray(d)) return 0
 
     return d.reduce((t,e)=>{
@@ -107,7 +160,7 @@ async function fetchTime(ws,date){
       return t+((new Date(e.endTime)-new Date(e.startTime))/1000)
     },0)
 
-  }catch(e){
+  }catch{
     return 0
   }
 }
@@ -131,52 +184,16 @@ async function load(){
     Math.min(100,(total/(8*3600))*100)+"%"
 }
 
-const moodList=["😔","😐","🙂","😊","🤩"]
+const moods=["😔","😐","🙂","😊","🤩"]
 
-async function saveMood(m){
-  await fetch(`${SUPABASE_URL}/rest/v1/moods`,{
-    method:"POST",
-    headers:{
-      "apikey":SUPABASE_KEY,
-      "Authorization":`Bearer ${SUPABASE_KEY}`,
-      "Content-Type":"application/json"
-    },
-    body:JSON.stringify({date:today(),emoji:m})
-  })
-}
-
-async function getMood(){
-  try{
-    const r=await fetch(`${SUPABASE_URL}/rest/v1/moods?date=eq.${today()}`,{
-      headers:{
-        "apikey":SUPABASE_KEY,
-        "Authorization":`Bearer ${SUPABASE_KEY}`
-      }
-    })
-    const d=await r.json()
-    return d[0]?.emoji
-  }catch(e){
-    return null
-  }
-}
-
-async function renderMood(){
+function renderMood(){
   const wrap=document.getElementById("moods")
-  const saved=await getMood()
-
   wrap.innerHTML=""
 
-  moodList.forEach(m=>{
+  moods.forEach(m=>{
     const b=document.createElement("button")
     b.innerText=m
-
-    if(m===saved) b.classList.add("active")
-
-    b.onclick=async ()=>{
-      await saveMood(m)
-      renderMood()
-    }
-
+    b.onclick=()=>b.classList.toggle("active")
     wrap.appendChild(b)
   })
 }
