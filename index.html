@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-color="peach">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data: blob:;">
+<title>Work Dashboard — Ankit</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+/* ── Color Themes ── */
+:root,[data-color="peach"]{
+  --accent:#e8724f;--accent-light:#fde8df;--accent-mid:#f9cfc0;--accent-soft:#f5a88e;
+}
+[data-color="blue"]{
+  --accent:#3b82f6;--accent-light:#dbeafe;--accent-mid:#bfdbfe;--accent-soft:#93c5fd;
+}
+[data-color="green"]{
+  --accent:#16a34a;--accent-light:#dcfce7;--accent-mid:#bbf7d0;--accent-soft:#86efac;
+}
+[data-color="violet"]{
+  --accent:#7c3aed;--accent-light:#ede9fe;--accent-mid:#ddd6fe;--accent-soft:#c4b5fd;
+}
+[data-color="rose"]{
+  --accent:#e11d48;--accent-light:#ffe4e6;--accent-mid:#fecdd3;--accent-soft:#fda4af;
+}
+
+[data-theme="light"]{
+  --bg:#f7f4f0;--surface:#ffffff;--surface2:#f2ede8;--surface3:#e8e2db;
+  --border:rgba(0,0,0,0.07);--border2:rgba(0,0,0,0.13);
+  --text:#1a1714;--text2:#6b6560;--text3:#a09a94;
+  --shadow:0 1px 12px rgba(0,0,0,0.06);--shadow-lg:0 6px 32px rgba(0,0,0,0.1);
+  --sage:#2e6b47;--sage-bg:#dff0e5;--amber:#92580a;--amber-bg:#fdf0d8;
+}
+[data-theme="dark"]{
+  --bg:#111009;--surface:#1a1814;--surface2:#221f1a;--surface3:#2a2620;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --text:#f0ece5;--text2:#9e9890;--text3:#6b6560;
+  --shadow:0 1px 12px rgba(0,0,0,0.35);--shadow-lg:0 6px 32px rgba(0,0,0,0.5);
+  --sage:#86efac;--sage-bg:rgba(134,239,172,0.12);--amber:#fcd34d;--amber-bg:rgba(252,211,77,0.12);
+  --accent-light:rgba(var(--accent-rgb,232,114,79),0.15);
+}
+
+body{font-family:'Geist',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;transition:background .2s,color .2s}
+
+/* ── Sidebar ── */
+.nav{width:68px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;align-items:center;padding:20px 0 16px;gap:4px;position:fixed;left:0;top:0;bottom:0;z-index:100;transition:background .2s}
+.nav-logo{width:36px;height:36px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:18px;font-size:17px;flex-shrink:0}
+.nav-btn{width:42px;height:42px;border-radius:11px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text3);transition:all .18s;position:relative}
+.nav-btn:hover{background:var(--surface2);color:var(--text)}
+.nav-btn.active{background:var(--accent-light);color:var(--accent)}
+.nav-btn svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.nav-spacer{flex:1}
+.nav-avatar{width:32px;height:32px;border-radius:50%;background:var(--accent-mid);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--accent);flex-shrink:0}
+
+/* ── Main ── */
+.main{margin-left:68px;flex:1;padding:28px 28px 40px;max-width:calc(100vw - 68px);min-height:100vh}
+
+/* ── Header ── */
+.hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:26px;gap:16px}
+.hdr h1{font-family:'Instrument Serif',serif;font-size:1.85rem;font-weight:400;letter-spacing:-.02em;line-height:1.15}
+.hdr h1 em{font-style:italic;color:var(--accent)}
+.hdr-sub{font-size:.78rem;color:var(--text3);margin-top:3px;font-weight:300}
+.hdr-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.pill-tabs{display:flex;background:var(--surface);border-radius:11px;padding:3px;gap:2px;border:1px solid var(--border)}
+.pill-tab{padding:5px 13px;border-radius:8px;border:none;background:transparent;font-size:.75rem;font-family:'Geist',sans-serif;font-weight:500;cursor:pointer;color:var(--text2);transition:all .18s}
+.pill-tab.active{background:var(--accent);color:#fff}
+.icon-btn{width:36px;height:36px;border-radius:9px;border:1px solid var(--border2);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);transition:all .18s}
+.icon-btn:hover{background:var(--surface2);color:var(--text)}
+.icon-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.spinning{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Error ── */
+.err-bar{background:#fff0ee;border:1px solid #ffc9be;border-radius:9px;padding:10px 14px;font-size:.77rem;color:#c0391b;margin-bottom:14px;display:none}
+[data-theme="dark"] .err-bar{background:rgba(192,57,27,.1);border-color:rgba(192,57,27,.3)}
+
+/* ── Cards ── */
+.card{background:var(--surface);border-radius:18px;border:1px solid var(--border);box-shadow:var(--shadow)}
+
+/* ── Today + Mood row ── */
+.top-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+
+.today-card{padding:24px 26px;position:relative;overflow:hidden}
+.today-card .circle-bg{position:absolute;top:-24px;right:-24px;width:110px;height:110px;border-radius:50%;background:var(--accent-light);pointer-events:none}
+.eyebrow{font-size:.67rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:7px}
+.big-time{font-family:'Instrument Serif',serif;font-size:3rem;font-weight:400;letter-spacing:-.03em;line-height:1;margin-bottom:6px}
+.vs-yesterday{font-size:.72rem;font-weight:500;margin-bottom:14px}
+.vs-up{color:var(--sage)}
+.vs-down{color:#e11d48}
+.vs-same{color:var(--text3)}
+.progress-wrap{margin-bottom:14px}
+.progress-label{display:flex;justify-content:space-between;font-size:.68rem;color:var(--text3);margin-bottom:5px}
+.progress-track{height:5px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;border-radius:4px;background:var(--accent);transition:width 1.2s cubic-bezier(.16,1,.3,1)}
+.ws-chips{display:flex;gap:7px;flex-wrap:wrap}
+.ws-chip{display:flex;align-items:center;gap:5px;background:var(--surface2);border-radius:7px;padding:4px 9px;font-size:.72rem;font-weight:500}
+.ws-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+/* Mood card */
+.mood-card{padding:24px 26px;background:var(--accent-light);border-color:transparent;display:flex;flex-direction:column}
+[data-theme="dark"] .mood-card{border-color:var(--border)}
+.mood-eyebrow{font-size:.67rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:5px;opacity:.85}
+.mood-date{font-size:.78rem;color:var(--text2);margin-bottom:16px;font-weight:300}
+.mood-grid{display:flex;gap:7px;flex:1;align-items:center}
+.mood-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;background:var(--surface);border:1.5px solid transparent;border-radius:11px;padding:9px 3px;cursor:pointer;transition:all .18s;font-family:'Geist',sans-serif}
+.mood-btn:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.mood-btn.selected{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--shadow)}
+[data-theme="dark"] .mood-btn{background:var(--surface2)}
+.mood-emoji{font-size:1.3rem}
+.mood-lbl{font-size:.6rem;color:var(--text3);font-weight:500}
+.mood-btn.selected .mood-lbl{color:var(--accent)}
+
+/* ── Stats row ── */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
+.stat-card{padding:18px 20px}
+.stat-eyebrow{font-size:.66rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:7px;display:flex;align-items:center;justify-content:space-between}
+.stat-badge{font-size:.62rem;font-weight:600;padding:2px 7px;border-radius:20px}
+.stat-badge.good{background:var(--sage-bg);color:var(--sage)}
+.stat-badge.warn{background:var(--amber-bg);color:var(--amber)}
+.stat-badge.bad{background:#ffe4e6;color:#e11d48}
+[data-theme="dark"] .stat-badge.bad{background:rgba(225,29,72,.15);color:#fda4af}
+.stat-val{font-family:'Instrument Serif',serif;font-size:1.9rem;font-weight:400;letter-spacing:-.02em;line-height:1;margin-bottom:4px}
+.stat-avg{font-size:.7rem;color:var(--text3);font-weight:300;margin-bottom:10px}
+.stat-avg span{font-weight:500;color:var(--text2)}
+.stat-trend{font-size:.68rem;font-weight:500;display:flex;align-items:center;gap:3px;margin-bottom:8px}
+.trend-up{color:var(--sage)}.trend-down{color:#e11d48}.trend-flat{color:var(--text3)}
+.bar-track{height:4px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:width 1.3s cubic-bezier(.16,1,.3,1);width:0%}
+
+/* ── Log / Data tabs ── */
+.log-card{padding:22px 24px}
+.log-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.log-title{font-size:.84rem;font-weight:600}
+.log-sub{font-size:.72rem;color:var(--text3);font-weight:300}
+.data-tabs{display:flex;background:var(--surface2);border-radius:8px;padding:3px;gap:2px}
+.data-tab{padding:4px 12px;border-radius:6px;border:none;background:transparent;font-size:.72rem;font-family:'Geist',sans-serif;font-weight:500;cursor:pointer;color:var(--text2);transition:all .18s}
+.data-tab.active{background:var(--surface);color:var(--text);box-shadow:var(--shadow)}
+
+.log-row{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);gap:10px}
+.log-row:last-child{border-bottom:none}
+.log-day{font-size:.76rem;color:var(--text3);min-width:88px;font-weight:400}
+.log-today{color:var(--accent);font-weight:600}
+.log-total{font-family:'Instrument Serif',serif;font-size:.98rem;font-weight:400;color:var(--text);min-width:60px}
+.log-tags{display:flex;gap:5px;flex-wrap:wrap}
+.log-tag{font-size:.66rem;font-weight:500;padding:2px 7px;border-radius:5px}
+.log-bar-wrap{flex:1;max-width:70px}
+.log-bar-track{height:3px;background:var(--surface2);border-radius:2px;overflow:hidden}
+.log-bar-fill{height:100%;border-radius:2px;background:var(--accent)}
+.log-mood{margin-left:auto;font-size:1rem}
+
+/* All data panel */
+.all-data-wrap{display:none}
+.all-data-wrap.visible{display:block}
+.recent-wrap{display:block}
+.recent-wrap.hidden{display:none}
+
+.project-row{display:flex;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);gap:10px;font-size:.78rem}
+.project-row:last-child{border-bottom:none}
+.project-name{font-weight:500;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.project-ws{font-size:.65rem;color:var(--text3);background:var(--surface2);padding:2px 6px;border-radius:4px;flex-shrink:0}
+.project-dur{font-family:'Instrument Serif',serif;font-size:.9rem;color:var(--text);flex-shrink:0;min-width:55px;text-align:right}
+.project-date{font-size:.67rem;color:var(--text3);flex-shrink:0;min-width:75px;text-align:right}
+
+/* ── Notification bell ── */
+.notif-btn{position:relative}
+.notif-dot{position:absolute;top:7px;right:7px;width:7px;height:7px;border-radius:50%;background:var(--accent);border:2px solid var(--surface);display:none}
+.notif-dot.show{display:block}
+
+/* ── Notification Panel ── */
+.notif-panel{position:fixed;top:0;right:0;bottom:0;width:340px;background:var(--surface);border-left:1px solid var(--border);box-shadow:var(--shadow-lg);z-index:200;transform:translateX(100%);transition:transform .25s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column}
+.notif-panel.open{transform:translateX(0)}
+.notif-panel-hdr{display:flex;align-items:center;justify-content:space-between;padding:20px 20px 16px;border-bottom:1px solid var(--border)}
+.notif-panel-title{font-size:.9rem;font-weight:600}
+.notif-close{width:30px;height:30px;border-radius:8px;border:none;background:var(--surface2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:16px}
+.notif-list{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:8px}
+.notif-item{background:var(--surface2);border-radius:11px;padding:12px 14px;border:1px solid var(--border)}
+.notif-item-title{font-size:.78rem;font-weight:600;color:var(--text);margin-bottom:3px}
+.notif-item-body{font-size:.72rem;color:var(--text2);font-weight:300;line-height:1.5}
+.notif-item-time{font-size:.64rem;color:var(--text3);margin-top:5px}
+.notif-item.accent{border-color:var(--accent);background:var(--accent-light)}
+[data-theme="dark"] .notif-item.accent{background:rgba(var(--accent-rgb,232,114,79),.1)}
+.notif-empty{text-align:center;color:var(--text3);font-size:.8rem;padding:40px 20px;font-weight:300}
+
+/* ── Mood Popup ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:300;display:none;align-items:center;justify-content:center}
+.overlay.show{display:flex}
+.popup{background:var(--surface);border-radius:20px;padding:28px;width:420px;max-width:92vw;box-shadow:var(--shadow-lg);animation:popIn .25s cubic-bezier(.34,1.56,.64,1)}
+@keyframes popIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+.popup-title{font-family:'Instrument Serif',serif;font-size:1.4rem;font-weight:400;margin-bottom:4px}
+.popup-sub{font-size:.78rem;color:var(--text2);margin-bottom:20px;font-weight:300}
+.popup-label{font-size:.73rem;font-weight:600;color:var(--text2);margin-bottom:8px;letter-spacing:.04em}
+.popup-moods{display:flex;gap:8px;margin-bottom:18px}
+.popup-mood-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;background:var(--surface2);border:1.5px solid transparent;border-radius:12px;padding:11px 4px;cursor:pointer;transition:all .18s;font-family:'Geist',sans-serif}
+.popup-mood-btn:hover{transform:translateY(-2px)}
+.popup-mood-btn.sel{border-color:var(--accent);background:var(--accent-light)}
+.popup-mood-emoji{font-size:1.5rem}
+.popup-mood-lbl{font-size:.62rem;color:var(--text3);font-weight:500}
+.popup-mood-btn.sel .popup-mood-lbl{color:var(--accent)}
+.popup-tags{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:18px}
+.popup-tag{padding:5px 12px;border-radius:20px;font-size:.72rem;font-weight:500;background:var(--surface2);border:1px solid var(--border2);cursor:pointer;color:var(--text2);transition:all .18s}
+.popup-tag.sel{background:var(--accent-light);border-color:var(--accent);color:var(--accent)}
+.popup-textarea{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:10px 12px;font-size:.78rem;font-family:'Geist',sans-serif;color:var(--text);resize:none;height:72px;outline:none;transition:border-color .18s;margin-bottom:16px}
+.popup-textarea:focus{border-color:var(--accent)}
+.popup-btns{display:flex;gap:8px;justify-content:flex-end}
+.popup-skip{padding:9px 18px;border-radius:9px;border:1px solid var(--border2);background:var(--surface2);font-size:.78rem;font-family:'Geist',sans-serif;cursor:pointer;color:var(--text2)}
+.popup-save{padding:9px 22px;border-radius:9px;border:none;background:var(--accent);color:#fff;font-size:.78rem;font-family:'Geist',sans-serif;font-weight:600;cursor:pointer;transition:opacity .18s}
+.popup-save:hover{opacity:.85}
+
+/* ── Settings ── */
+.settings-wrap{max-width:540px}
+.s-card{padding:0;overflow:hidden;margin-bottom:14px}
+.s-hdr{padding:16px 20px 13px;border-bottom:1px solid var(--border)}
+.s-title{font-size:.83rem;font-weight:600}
+.s-desc{font-size:.72rem;color:var(--text3);margin-top:2px;font-weight:300}
+.s-body{padding:16px 20px;display:flex;flex-direction:column;gap:13px}
+.s-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.s-lbl{font-size:.8rem;font-weight:500;color:var(--text)}
+.s-sub{font-size:.7rem;color:var(--text3);margin-top:1px;font-weight:300}
+.toggle{width:42px;height:24px;background:var(--surface3);border-radius:12px;border:1px solid var(--border2);cursor:pointer;position:relative;transition:background .18s;flex-shrink:0}
+.toggle.on{background:var(--accent);border-color:var(--accent)}
+.toggle-knob{position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform .18s;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.toggle.on .toggle-knob{transform:translateX(18px)}
+.color-swatches{display:flex;gap:8px}
+.swatch{width:28px;height:28px;border-radius:8px;cursor:pointer;border:2px solid transparent;transition:all .18s}
+.swatch.active{border-color:var(--text);transform:scale(1.1)}
+.s-input{flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:9px;padding:8px 12px;font-size:.76rem;font-family:'Geist',monospace;color:var(--text);outline:none;transition:border-color .18s}
+.s-input:focus{border-color:var(--accent)}
+.s-btn{padding:8px 16px;border-radius:9px;border:none;background:var(--accent);color:#fff;font-size:.75rem;font-family:'Geist',sans-serif;font-weight:600;cursor:pointer;white-space:nowrap;transition:opacity .18s}
+.s-btn:hover{opacity:.85}
+.s-btn.secondary{background:var(--surface2);color:var(--text2);border:1px solid var(--border2)}
+.s-info{display:flex;justify-content:space-between;padding:7px 0;font-size:.77rem;border-bottom:1px solid var(--border)}
+.s-info:last-child{border-bottom:none}
+.s-info-lbl{color:var(--text2)}.s-info-val{font-weight:500;color:var(--text);font-family:monospace;font-size:.72rem}
+.s-save-msg{font-size:.7rem;color:var(--sage);display:none;margin-top:2px}
+
+/* versions list */
+.version-list{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.ver-item{display:flex;align-items:center;gap:8px;background:var(--surface2);border-radius:9px;padding:9px 12px;font-size:.75rem}
+.ver-name{flex:1;font-weight:500;color:var(--text)}
+.ver-date{color:var(--text3);font-size:.68rem}
+.ver-restore{padding:4px 10px;border-radius:6px;border:1px solid var(--border2);background:transparent;font-size:.68rem;font-family:'Geist',sans-serif;cursor:pointer;color:var(--text2);transition:all .18s}
+.ver-restore:hover{background:var(--accent-light);color:var(--accent);border-color:var(--accent)}
+.ver-current{font-size:.65rem;background:var(--accent-light);color:var(--accent);padding:2px 7px;border-radius:5px;font-weight:600}
+
+/* ── Skeleton ── */
+.skel{background:linear-gradient(90deg,var(--surface2) 25%,var(--border2) 50%,var(--surface2) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:5px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* ── Footer ── */
+.footer{text-align:center;padding-top:20px;font-size:.68rem;color:var(--text3);font-weight:300}
+
+/* ── Responsive ── */
+@media(max-width:680px){.top-row{grid-template-columns:1fr}.stats-row{grid-template-columns:1fr 1fr}.main{padding:16px}}
+@media(max-width:420px){.stats-row{grid-template-columns:1fr}.big-time{font-size:2.4rem}.pill-tabs{display:none}.nav{width:54px}.main{margin-left:54px}}
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<nav class="nav">
+  <div class="nav-logo">💻</div>
+  <button class="nav-btn active" id="nb-dash" onclick="goTab('dash')" title="Dashboard">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+  </button>
+  <button class="nav-btn" id="nb-data" onclick="goTab('data')" title="All Data">
+    <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+  </button>
+  <button class="nav-btn notif-btn" id="nb-notif" onclick="toggleNotif()" title="Notifications">
+    <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    <div class="notif-dot" id="notif-dot"></div>
+  </button>
+  <button class="nav-btn" id="nb-settings" onclick="goTab('settings')" title="Settings">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+  </button>
+  <div class="nav-spacer"></div>
+  <div class="nav-avatar">AK</div>
+</nav>
+
+<!-- Notification Panel -->
+<div class="notif-panel" id="notif-panel">
+  <div class="notif-panel-hdr">
+    <div class="notif-panel-title">Notifications</div>
+    <button class="notif-close" onclick="toggleNotif()">✕</button>
+  </div>
+  <div class="notif-list" id="notif-list">
+    <div class="notif-empty">No notifications yet</div>
+  </div>
+</div>
+
+<!-- Mood Popup -->
+<div class="overlay" id="mood-overlay">
+  <div class="popup">
+    <div class="popup-title">How was your day, Ankit?</div>
+    <div class="popup-sub" id="popup-date-sub"></div>
+    <div class="popup-label">State of mind</div>
+    <div class="popup-moods" id="popup-moods"></div>
+    <div class="popup-label">Work type</div>
+    <div class="popup-tags" id="popup-tags"></div>
+    <div class="popup-label">Note (optional)</div>
+    <textarea class="popup-textarea" id="popup-comment" placeholder="What went well? What could improve?"></textarea>
+    <div class="popup-btns">
+      <button class="popup-skip" onclick="closePopup()">Skip</button>
+      <button class="popup-save" onclick="savePopupMood()">Save ✦</button>
+    </div>
+  </div>
+</div>
+
+<!-- Main -->
+<main class="main">
+  <div class="hdr">
+    <div>
+      <h1>Good <em id="greet-word">morning</em>, Ankit</h1>
+      <div class="hdr-sub" id="updated-lbl">Loading…</div>
+    </div>
+    <div class="hdr-right">
+      <div class="pill-tabs" id="period-tabs">
+        <button class="pill-tab active" data-p="today" onclick="setPeriod('today')">Today</button>
+        <button class="pill-tab" data-p="week" onclick="setPeriod('week')">Week</button>
+        <button class="pill-tab" data-p="month" onclick="setPeriod('month')">Month</button>
+        <button class="pill-tab" data-p="year" onclick="setPeriod('year')">Year</button>
+      </div>
+      <button class="icon-btn" id="ref-btn" onclick="loadAll()" title="Refresh">
+        <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Dashboard tab -->
+  <div id="tab-dash">
+    <div class="err-bar" id="err-bar"></div>
+    <div class="top-row">
+      <!-- Today card -->
+      <div class="card today-card">
+        <div class="circle-bg"></div>
+        <div class="eyebrow" id="today-eyebrow">Today's total</div>
+        <div class="big-time" id="big-time">–h –m</div>
+        <div class="vs-yesterday" id="vs-yday"></div>
+        <div class="progress-wrap">
+          <div class="progress-label"><span id="prog-lbl">0h of 8h goal</span><span id="prog-pct">0%</span></div>
+          <div class="progress-track"><div class="progress-fill" id="prog-fill"></div></div>
+        </div>
+        <div class="ws-chips">
+          <div class="ws-chip"><div class="ws-dot" style="background:#f5a88e"></div><span style="color:var(--text3)">Ankit's WS</span><span id="ws1-val" style="margin-left:2px">–</span></div>
+          <div class="ws-chip"><div class="ws-dot" style="background:#8fad99"></div><span style="color:var(--text3)">Leadywaves</span><span id="ws2-val" style="margin-left:2px">–</span></div>
+        </div>
+      </div>
+      <!-- Mood card -->
+      <div class="card mood-card">
+        <div class="mood-eyebrow">State of mind</div>
+        <div class="mood-date" id="mood-date-lbl"></div>
+        <div class="mood-grid" id="mood-grid"></div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="card stat-card">
+        <div class="stat-eyebrow"><span style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:#f5a88e;display:inline-block"></span>This week</span><span class="stat-badge" id="week-badge">–</span></div>
+        <div class="stat-val" id="week-val">–</div>
+        <div class="stat-avg">Avg/day: <span id="week-avg">–</span></div>
+        <div class="stat-trend" id="week-trend"></div>
+        <div class="bar-track"><div class="bar-fill" id="week-bar" style="background:#f5a88e"></div></div>
+      </div>
+      <div class="card stat-card">
+        <div class="stat-eyebrow"><span style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:#e8a84e;display:inline-block"></span>This month</span><span class="stat-badge" id="month-badge">–</span></div>
+        <div class="stat-val" id="month-val">–</div>
+        <div class="stat-avg">Avg/day: <span id="month-avg">–</span></div>
+        <div class="stat-trend" id="month-trend"></div>
+        <div class="bar-track"><div class="bar-fill" id="month-bar" style="background:#e8a84e"></div></div>
+      </div>
+      <div class="card stat-card">
+        <div class="stat-eyebrow"><span style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:#8fad99;display:inline-block"></span>This year</span><span class="stat-badge" id="year-badge">–</span></div>
+        <div class="stat-val" id="year-val">–</div>
+        <div class="stat-avg">Avg/day: <span id="year-avg">–</span></div>
+        <div class="stat-trend" id="year-trend"></div>
+        <div class="bar-track"><div class="bar-fill" id="year-bar" style="background:#8fad99"></div></div>
+      </div>
+    </div>
+
+    <!-- Log -->
+    <div class="card log-card">
+      <div class="log-hdr">
+        <div class="log-title">Recent days</div>
+        <div class="data-tabs">
+          <button class="data-tab active" onclick="switchLogTab('recent')">Recent</button>
+          <button class="data-tab" onclick="switchLogTab('all')">All data</button>
+        </div>
+      </div>
+      <div class="recent-wrap" id="recent-wrap">
+        <div id="log-rows">
+          <div class="log-row"><div class="skel" style="width:65%;height:13px"></div></div>
+          <div class="log-row"><div class="skel" style="width:55%;height:13px"></div></div>
+          <div class="log-row"><div class="skel" style="width:60%;height:13px"></div></div>
+        </div>
+      </div>
+      <div class="all-data-wrap" id="all-data-wrap">
+        <div id="project-rows"><div class="log-row"><div class="skel" style="width:70%;height:13px"></div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data tab -->
+  <div id="tab-data" style="display:none">
+    <div class="card log-card">
+      <div class="log-hdr">
+        <div class="log-title">All time entries — full backup</div>
+        <div class="log-sub" id="snapshot-count">Loading…</div>
+      </div>
+      <div id="full-data-rows"><div class="log-row"><div class="skel" style="width:60%;height:13px"></div></div></div>
+    </div>
+  </div>
+
+  <!-- Settings tab -->
+  <div id="tab-settings" style="display:none">
+    <div class="settings-wrap">
+
+      <!-- Appearance -->
+      <div class="card s-card">
+        <div class="s-hdr"><div class="s-title">Appearance</div><div class="s-desc">Theme and color</div></div>
+        <div class="s-body">
+          <div class="s-row">
+            <div><div class="s-lbl">Dark mode</div><div class="s-sub">Switch light / dark</div></div>
+            <div class="toggle" id="theme-toggle" onclick="toggleTheme()"><div class="toggle-knob"></div></div>
+          </div>
+          <div class="s-row">
+            <div><div class="s-lbl">Accent color</div><div class="s-sub">Pick your vibe</div></div>
+            <div class="color-swatches">
+              <div class="swatch" style="background:#e8724f" data-c="peach" onclick="setColor('peach',this)" title="Peach"></div>
+              <div class="swatch" style="background:#3b82f6" data-c="blue" onclick="setColor('blue',this)" title="Blue"></div>
+              <div class="swatch" style="background:#16a34a" data-c="green" onclick="setColor('green',this)" title="Green"></div>
+              <div class="swatch" style="background:#7c3aed" data-c="violet" onclick="setColor('violet',this)" title="Violet"></div>
+              <div class="swatch" style="background:#e11d48" data-c="rose" onclick="setColor('rose',this)" title="Rose"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- API Token -->
+      <div class="card s-card">
+        <div class="s-hdr"><div class="s-title">TMetric API Token</div><div class="s-desc">Valid 1 year — update here when it expires</div></div>
+        <div class="s-body">
+          <div>
+            <div class="s-lbl" style="margin-bottom:6px">New token</div>
+            <div class="s-row">
+              <input class="s-input" id="token-input" type="password" placeholder="Paste new Bearer token…"/>
+              <button class="s-btn" onclick="saveToken()">Save</button>
+            </div>
+            <div class="s-save-msg" id="token-msg">Saved! Refreshing…</div>
+          </div>
+          <div>
+            <div class="s-info"><span class="s-info-lbl">User ID</span><span class="s-info-val">399254</span></div>
+            <div class="s-info"><span class="s-info-lbl">Workspace 1</span><span class="s-info-val">241637 — Ankit's WS</span></div>
+            <div class="s-info"><span class="s-info-lbl">Workspace 2</span><span class="s-info-val">228817 — Leadywaves</span></div>
+            <div class="s-info"><span class="s-info-lbl">Token status</span><span class="s-info-val" style="color:var(--sage)">Active</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- App versions / upload -->
+      <div class="card s-card">
+        <div class="s-hdr"><div class="s-title">App versions</div><div class="s-desc">Upload new index.html — data stays safe in Supabase forever</div></div>
+        <div class="s-body">
+          <div class="s-row">
+            <div><div class="s-lbl">Version name</div><div class="s-sub">Auto-generated or custom</div></div>
+            <input class="s-input" id="ver-name-input" placeholder="e.g. v2.1 — dark redesign" style="max-width:200px"/>
+          </div>
+          <div class="s-row">
+            <input type="file" id="html-upload" accept=".html" style="display:none" onchange="uploadVersion()"/>
+            <button class="s-btn secondary" onclick="document.getElementById('html-upload').click()">Choose HTML file</button>
+            <div class="s-save-msg" id="ver-msg" style="display:inline;margin-left:8px"></div>
+          </div>
+          <div>
+            <div class="s-lbl" style="margin-bottom:8px">Recent versions (last 10)</div>
+            <div class="version-list" id="version-list"><div class="skel" style="height:36px;border-radius:9px"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Supabase config -->
+      <div class="card s-card">
+        <div class="s-hdr"><div class="s-title">Database</div><div class="s-desc">Supabase connection</div></div>
+        <div class="s-body">
+          <div class="s-info"><span class="s-info-lbl">Project</span><span class="s-info-val">tmetric_work-dashboard</span></div>
+          <div class="s-info"><span class="s-info-lbl">URL</span><span class="s-info-val">wsghnkgtwjhbqyfgnkot.supabase.co</span></div>
+          <div class="s-info"><span class="s-info-lbl">Tables</span><span class="s-info-val">moods · time_snapshots · settings · app_versions</span></div>
+          <div class="s-info"><span class="s-info-lbl">Status</span><span class="s-info-val" id="db-status" style="color:var(--sage)">Checking…</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="footer" id="footer-ts"></div>
+</main>
+
+<script>
+// ---
+//  CONFIG
+// ---
+const SUPABASE_URL = "https://wsghnkgtwjhbqyfgnkot.supabase.co"
+const SUPABASE_KEY = "sb_publishable_fuJ7rToaSM7mnTYqjHGspQ_JBRbYKU4"
+const PROXY        = "https://tmetric-proxy.hiankitkapoor.workers.dev"
+const USER_ID      = 399254
+const GOAL_HRS     = 8
+const WS = [
+  {id:"241637", name:"Ankit's WS",  color:"#f5a88e", tagBg:"#fde8df", tagColor:"#c0551f"},
+  {id:"228817", name:"Leadywaves",  color:"#8fad99", tagBg:"#dff0e5", tagColor:"#2e6b47"},
+]
+const MOODS     = [{e:"😔",l:"Hard"},{e:"😐",l:"Meh"},{e:"🙂",l:"OK"},{e:"😊",l:"Good"},{e:"🤩",l:"Epic"}]
+const WORK_TAGS = ["Deep work","Meetings","Design","Dev","Research","Admin","Learning","Creative"]
+
+let currentPeriod = "today"
+let notifications = []
+let currentTab    = "dash"
+
+function getToken(){return localStorage.getItem("tm_token")||"0CCEFE6207F9E7BD5746D1FD6EE33109CF695E9281B20E72A0DF0B0EF1BBDF3E-1"}
+
+// ---
+//  SUPABASE helpers
+// ---
+async function sbFetch(path, opts={}){
+  const r = await fetch(`${SUPABASE_URL}/rest/v1${path}`,{
+    ...opts,
+    headers:{
+      "apikey": SUPABASE_KEY,
+      "Authorization": `Bearer ${SUPABASE_KEY}`,
+      "Content-Type":"application/json",
+      "Prefer":"return=representation",
+      ...(opts.headers||{})
+    }
+  })
+  if(!r.ok){const t=await r.text();throw new Error(t)}
+  const ct=r.headers.get("content-type")||""
+  return ct.includes("json") ? r.json() : null
+}
+const sbGet  = (p,q="")        => sbFetch(`${p}?${q}`)
+const sbPost = (p,body)        => sbFetch(p,{method:"POST",body:JSON.stringify(body)})
+const sbPatch= (p,q,body)      => sbFetch(`${p}?${q}`,{method:"PATCH",body:JSON.stringify(body)})
+const sbUpsert=(p,body)        => sbFetch(p,{method:"POST",body:JSON.stringify(body),headers:{"Prefer":"resolution=merge-duplicates,return=representation"}})
+
+// ---
+//  DATE helpers
+// ---
+const pad=n=>String(n).padStart(2,"0")
+function ds(d){return`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`}
+function todayStr(){return ds(new Date())}
+function offsetDs(n){const d=new Date();d.setDate(d.getDate()+n);return ds(d)}
+function weekStart(){const d=new Date(),day=d.getDay()||7;d.setDate(d.getDate()-day+1);return ds(d)}
+function monthStart(){const d=new Date();return`${d.getFullYear()}-${pad(d.getMonth()+1)}-01`}
+function yearStart(){return`${new Date().getFullYear()}-01-01`}
+function daysInRange(s,e){return Math.max(1,Math.round((new Date(e)-new Date(s))/864e5)+1)}
+
+function periodRange(){
+  const t=todayStr()
+  if(currentPeriod==="today") return[t,t]
+  if(currentPeriod==="week")  return[weekStart(),t]
+  if(currentPeriod==="month") return[monthStart(),t]
+  return[yearStart(),t]
+}
+
+// ---
+//  FORMAT
+// ---
+function fmt(s){
+  if(!s||s<0)return"0m"
+  const h=Math.floor(s/3600),m=Math.floor((s%3600)/60)
+  return h>0?`${h}h ${m}m`:`${m}m`
+}
+function fmtShort(s){
+  if(!s||s<0)return"0m"
+  const h=Math.floor(s/3600),m=Math.floor((s%3600)/60)
+  return h>0?`${h}h${m>0?` ${m}m`:""}`:` ${m}m`
+}
+
+// ---
+//  TMETRIC API
+// ---
+async function fetchWs(wsId,start,end){
+  const url=`${PROXY}/accounts/${wsId}/timeentries/${USER_ID}?startTime=${start}T00:00:00&endTime=${end}T23:59:59&useUtcTime=false`
+  const r=await fetch(url)
+  if(!r.ok)throw new Error(`${r.status}`)
+  const data=await r.json()
+  if(!Array.isArray(data))return{secs:0,entries:[]}
+  const secs=data.reduce((s,e)=>{
+    if(!e.startTime||!e.endTime)return s
+    const d=(new Date(e.endTime)-new Date(e.startTime))/1000
+    return s+(d>0?d:0)
+  },0)
+  return{secs,entries:data}
+}
+async function fetchBoth(start,end){
+  const[a,b]=await Promise.all(WS.map(w=>fetchWs(w.id,start,end)))
+  return{ws1:a.secs,ws2:b.secs,total:a.secs+b.secs,e1:a.entries,e2:b.entries}
+}
+
+// ---
+//  SNAPSHOT — save to Supabase
+// ---
+async function snapshotEntries(e1,e2,date){
+  const rows=[]
+  const process=(entries,ws)=>{
+    entries.forEach(e=>{
+      if(!e.startTime||!e.endTime)return
+      const dur=Math.round((new Date(e.endTime)-new Date(e.startTime))/1000)
+      if(dur<=0)return
+      rows.push({
+        date,
+        workspace_id:ws.id,
+        workspace_name:ws.name,
+        project_name:e.project?.name||"No project",
+        task_name:e.task?.name||e.note||"",
+        duration_secs:dur,
+        start_time:e.startTime,
+        end_time:e.endTime
+      })
+    })
+  }
+  process(e1,WS[0]);process(e2,WS[1])
+  if(rows.length===0)return
+  // upsert by start_time to avoid duplicates
+  try{
+    for(const row of rows){
+      await sbFetch("/time_snapshots",{
+        method:"POST",
+        body:JSON.stringify(row),
+        headers:{"Prefer":"resolution=ignore-duplicates,return=minimal"}
+      })
+    }
+  }catch(err){console.warn("Snapshot err:",err)}
+}
+
+// ---
+//  MOOD — Supabase
+// ---
+async function getMoodFromDB(date){
+  try{
+    const r=await sbGet("/moods",`date=eq.${date}&select=emoji,mood_type,work_type,comment`)
+    return r&&r[0]?r[0]:null
+  }catch{return null}
+}
+async function saveMoodToDB(date,emoji,moodType,workType,comment){
+  try{
+    await sbUpsert("/moods",{date,emoji,mood_type:moodType,work_type:workType,comment})
+    // also local cache
+    const cache=JSON.parse(localStorage.getItem("mood_cache")||"{}")
+    cache[date]={emoji,mood_type:moodType}
+    localStorage.setItem("mood_cache",JSON.stringify(cache))
+  }catch(err){console.warn("Mood save err:",err)}
+}
+function getCachedMood(date){
+  const c=JSON.parse(localStorage.getItem("mood_cache")||"{}")
+  return c[date]?.emoji||null
+}
+
+// ---
+//  MOOD PICKER (inline card)
+// ---
+async function renderMoodPicker(){
+  const today=todayStr()
+  const saved=getCachedMood(today)
+  const wrap=document.getElementById("mood-grid")
+  wrap.innerHTML=""
+  MOODS.forEach(m=>{
+    const btn=document.createElement("button")
+    btn.className="mood-btn"+(saved===m.e?" selected":"")
+    btn.innerHTML=`<span class="mood-emoji">${m.e}</span><span class="mood-lbl">${m.l}</span>`
+    btn.onclick=async()=>{
+      await saveMoodToDB(today,m.e,m.l,"","")
+      renderMoodPicker()
+      addNotif("Mood logged","Your mood for today has been saved ✦","now")
+    }
+    wrap.appendChild(btn)
+  })
+  const d=new Date()
+  document.getElementById("mood-date-lbl").textContent=d.toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long"})
+}
+
+// ---
+//  POPUP mood (10 PM)
+// ---
+let popupMoodSel="", popupTagSel=""
+function renderPopupMoods(){
+  const wrap=document.getElementById("popup-moods")
+  wrap.innerHTML=""
+  MOODS.forEach(m=>{
+    const btn=document.createElement("button")
+    btn.className="popup-mood-btn"
+    btn.innerHTML=`<span class="popup-mood-emoji">${m.e}</span><span class="popup-mood-lbl">${m.l}</span>`
+    btn.onclick=()=>{popupMoodSel=m.e;wrap.querySelectorAll(".popup-mood-btn").forEach(b=>b.classList.remove("sel"));btn.classList.add("sel")}
+    wrap.appendChild(btn)
+  })
+  const tw=document.getElementById("popup-tags")
+  tw.innerHTML=""
+  WORK_TAGS.forEach(t=>{
+    const btn=document.createElement("button")
+    btn.className="popup-tag"
+    btn.textContent=t
+    btn.onclick=()=>{popupTagSel=t;tw.querySelectorAll(".popup-tag").forEach(b=>b.classList.remove("sel"));btn.classList.add("sel")}
+    tw.appendChild(btn)
+  })
+}
+function openMoodPopup(){
+  const already=getCachedMood(todayStr())
+  if(already)return
+  renderPopupMoods()
+  document.getElementById("popup-date-sub").textContent=new Date().toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long",year:"numeric"})
+  document.getElementById("mood-overlay").classList.add("show")
+}
+function closePopup(){document.getElementById("mood-overlay").classList.remove("show")}
+async function savePopupMood(){
+  if(!popupMoodSel)return
+  const comment=document.getElementById("popup-comment").value.trim()
+  await saveMoodToDB(todayStr(),popupMoodSel,MOODS.find(m=>m.e===popupMoodSel)?.l||"",popupTagSel,comment)
+  closePopup()
+  renderMoodPicker()
+  addNotif("Day logged ✦",`Mood: ${popupMoodSel} ${popupTagSel?"· "+popupTagSel:""}${comment?" · "+comment.slice(0,40):""}`,new Date().toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}))
+}
+
+// Check 10 PM
+function check10PM(){
+  const now=new Date()
+  const h=now.getHours(),mi=now.getMinutes()
+  if(h===22&&mi<5){
+    const key="popup_shown_"+todayStr()
+    if(!localStorage.getItem(key)){
+      localStorage.setItem(key,"1")
+      addNotif("Time to reflect 🌙","It's 10 PM — log your state of mind for today!","now",true)
+      openMoodPopup()
+    }
+  }
+}
+setInterval(check10PM,60000)
+
+// ---
+//  NOTIFICATIONS
+// ---
+function addNotif(title,body,time="now",accent=false){
+  notifications.unshift({title,body,time,accent})
+  if(notifications.length>20)notifications.pop()
+  renderNotifs()
+  document.getElementById("notif-dot").classList.add("show")
+}
+function renderNotifs(){
+  const list=document.getElementById("notif-list")
+  if(!notifications.length){list.innerHTML=`<div class="notif-empty">No notifications yet</div>`;return}
+  list.innerHTML=notifications.map(n=>`
+    <div class="notif-item${n.accent?" accent":""}">
+      <div class="notif-item-title">${n.title}</div>
+      <div class="notif-item-body">${n.body}</div>
+      <div class="notif-item-time">${n.time}</div>
+    </div>`).join("")
+}
+function toggleNotif(){
+  document.getElementById("notif-panel").classList.toggle("open")
+  document.getElementById("notif-dot").classList.remove("show")
+}
+
+// ---
+//  STATS helpers
+// ---
+function getRating(avgHrPerDay){
+  if(avgHrPerDay>=GOAL_HRS)  return{label:"Great",cls:"good"}
+  if(avgHrPerDay>=GOAL_HRS*.6)return{label:"OK",cls:"warn"}
+  return{label:"Low",cls:"bad"}
+}
+function getTrend(curr,prev,label){
+  if(!prev)return""
+  const pct=Math.round((curr-prev)/prev*100)
+  if(Math.abs(pct)<2)return`<span class="trend-flat">→ Same as last ${label}</span>`
+  if(pct>0)return`<span class="trend-up">↑ ${pct}% vs last ${label}</span>`
+  return`<span class="trend-down">↓ ${Math.abs(pct)}% vs last ${label}</span>`
+}
+
+// ---
+//  MAIN LOAD
+// ---
+async function loadAll(){
+  const btn=document.getElementById("ref-btn")
+  btn.classList.add("spinning")
+  document.getElementById("err-bar").style.display="none"
+
+  const labels={today:"Today's total",week:"This week",month:"This month",year:"This year"}
+  document.getElementById("today-eyebrow").textContent=labels[currentPeriod]
+
+  const[start,end]=periodRange()
+  const t=todayStr()
+  const yd=offsetDs(-1)
+
+  try{
+    const[main,yest,week,prevWeek,month,prevMonth,year,prevYear]=await Promise.all([
+      fetchBoth(start,end),
+      fetchBoth(yd,yd),
+      fetchBoth(weekStart(),t),
+      fetchBoth(offsetDs(-14),offsetDs(-7)),
+      fetchBoth(monthStart(),t),
+      (()=>{const d=new Date();d.setMonth(d.getMonth()-1);const ms=`${d.getFullYear()}-${pad(d.getMonth()+1)}-01`;const me=`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(new Date(d.getFullYear(),d.getMonth()+1,0).getDate())}`;return fetchBoth(ms,me)})(),
+      fetchBoth(yearStart(),t),
+      fetchBoth(`${new Date().getFullYear()-1}-01-01`,`${new Date().getFullYear()-1}-12-31`),
+    ])
+
+    // Today card
+    document.getElementById("big-time").textContent=fmt(main.total)
+    document.getElementById("ws1-val").textContent=fmt(main.ws1)
+    document.getElementById("ws2-val").textContent=fmt(main.ws2)
+
+    // vs yesterday
+    const vsEl=document.getElementById("vs-yday")
+    if(yest.total>0){
+      const diff=main.total-yest.total
+      const pct=Math.abs(Math.round(diff/yest.total*100))
+      if(diff>0)vsEl.innerHTML=`<span class="vs-up">↑ ${pct}% more than yesterday</span>`
+      else if(diff<0)vsEl.innerHTML=`<span class="vs-down">↓ ${pct}% less than yesterday</span>`
+      else vsEl.innerHTML=`<span class="vs-same">Same as yesterday</span>`
+    }else vsEl.innerHTML=""
+
+    // Progress bar
+    const goalSecs=GOAL_HRS*3600
+    const todaySecs=currentPeriod==="today"?main.total:week.total
+    const pct=Math.min(100,Math.round(todaySecs/goalSecs*100))
+    document.getElementById("prog-fill").style.width=pct+"%"
+    document.getElementById("prog-pct").textContent=pct+"%"
+    document.getElementById("prog-lbl").textContent=`${fmt(todaySecs)} of ${GOAL_HRS}h goal`
+
+    // Stats
+    const wDays=daysInRange(weekStart(),t)
+    const mDays=daysInRange(monthStart(),t)
+    const yDays=daysInRange(yearStart(),t)
+
+    const wAvg=week.total/wDays,mAvg=month.total/mDays,yAvg=year.total/yDays
+    const wRate=getRating(wAvg/3600),mRate=getRating(mAvg/3600),yRate=getRating(yAvg/3600)
+
+    document.getElementById("week-val").textContent=fmt(week.total)
+    document.getElementById("month-val").textContent=fmt(month.total)
+    document.getElementById("year-val").textContent=fmt(year.total)
+    document.getElementById("week-avg").textContent=fmtShort(wAvg)+"/day"
+    document.getElementById("month-avg").textContent=fmtShort(mAvg)+"/day"
+    document.getElementById("year-avg").textContent=fmtShort(yAvg)+"/day"
+    document.getElementById("week-badge").textContent=wRate.label;document.getElementById("week-badge").className="stat-badge "+wRate.cls
+    document.getElementById("month-badge").textContent=mRate.label;document.getElementById("month-badge").className="stat-badge "+mRate.cls
+    document.getElementById("year-badge").textContent=yRate.label;document.getElementById("year-badge").className="stat-badge "+yRate.cls
+    document.getElementById("week-trend").innerHTML=getTrend(week.total,prevWeek.total,"week")
+    document.getElementById("month-trend").innerHTML=getTrend(month.total,prevMonth.total,"month")
+    document.getElementById("year-trend").innerHTML=getTrend(year.total,prevYear.total,"year")
+
+    const maxS=year.total||1
+    setTimeout(()=>{
+      document.getElementById("week-bar").style.width=Math.min(100,Math.round(week.total/maxS*100))+"%"
+      document.getElementById("month-bar").style.width=Math.min(100,Math.round(month.total/maxS*100))+"%"
+      document.getElementById("year-bar").style.width="100%"
+    },120)
+
+    const ts=new Date().toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"})
+    document.getElementById("updated-lbl").textContent="Updated "+ts
+    document.getElementById("footer-ts").textContent=new Date().toLocaleDateString("en-IN",{weekday:"long",year:"numeric",month:"long",day:"numeric"})
+
+    // Snapshot today's entries to Supabase
+    if(currentPeriod==="today"||currentPeriod==="week"){
+      snapshotEntries(main.e1||[],main.e2||[],t)
+    }
+
+    await renderLog()
+
+  }catch(err){
+    const bar=document.getElementById("err-bar")
+    bar.style.display="block"
+    bar.textContent="Could not load data. Error: "+err.message
+    document.getElementById("updated-lbl").textContent="Failed to load"
+    console.error(err)
+  }
+  btn.classList.remove("spinning")
+}
+
+// ---
+//  LOG (recent days)
+// ---
+async function renderLog(){
+  const wrap=document.getElementById("log-rows")
+  const moodCache=JSON.parse(localStorage.getItem("mood_cache")||"{}")
+  const rows=Array.from({length:7},(_,i)=>{
+    const d=new Date();d.setDate(d.getDate()-i)
+    const dk=ds(d)
+    const lbl=i===0?"Today":i===1?"Yesterday":d.toLocaleDateString("en-IN",{weekday:"short",day:"numeric",month:"short"})
+    return{dk,lbl,isToday:i===0,mood:moodCache[dk]?.emoji||moodCache[dk]||null}
+  })
+  const results=await Promise.allSettled(rows.map(r=>fetchBoth(r.dk,r.dk).then(d=>({...r,...d}))))
+  const maxT=Math.max(1,...results.filter(r=>r.status==="fulfilled").map(r=>r.value.total))
+  wrap.innerHTML=""
+  results.forEach((res,i)=>{
+    if(res.status!=="fulfilled")return
+    const r=res.value
+    const row=document.createElement("div")
+    row.className="log-row"
+    row.style.animationDelay=i*0.04+"s"
+    row.innerHTML=`
+      <span class="log-day ${r.isToday?"log-today":""}">${r.lbl}</span>
+      <span class="log-total">${fmt(r.total)}</span>
+      <div class="log-tags">
+        <span class="log-tag" style="background:${WS[0].tagBg};color:${WS[0].tagColor}">${fmt(r.ws1)}</span>
+        <span class="log-tag" style="background:${WS[1].tagBg};color:${WS[1].tagColor}">${fmt(r.ws2)}</span>
+      </div>
+      <div class="log-bar-wrap"><div class="log-bar-track"><div class="log-bar-fill" style="width:${Math.round(r.total/maxT*100)}%"></div></div></div>
+      <span class="log-mood">${r.mood||""}</span>`
+    wrap.appendChild(row)
+  })
+
+  // Also render all-data (snapshots from Supabase)
+  renderSnapshotData()
+}
+
+async function renderSnapshotData(){
+  const wrap=document.getElementById("project-rows")
+  try{
+    const rows=await sbGet("/time_snapshots","select=date,project_name,workspace_name,duration_secs&order=date.desc&limit=30")
+    if(!rows||!rows.length){wrap.innerHTML=`<div class="log-row" style="color:var(--text3);font-size:.78rem">No snapshot data yet — will populate as you browse.</div>`;return}
+    wrap.innerHTML=""
+    rows.forEach(r=>{
+      const row=document.createElement("div")
+      row.className="project-row"
+      const ws=WS.find(w=>w.name===r.workspace_name)||WS[0]
+      row.innerHTML=`
+        <span class="project-name">${r.project_name||"No project"}</span>
+        <span class="project-ws" style="background:${ws.tagBg};color:${ws.tagColor}">${r.workspace_name}</span>
+        <span class="project-dur">${fmt(r.duration_secs)}</span>
+        <span class="project-date">${r.date}</span>`
+      wrap.appendChild(row)
+    })
+  }catch(err){wrap.innerHTML=`<div class="log-row" style="color:var(--text3);font-size:.78rem">Snapshot load failed: ${err.message}</div>`}
+}
+
+// ---
+//  ALL DATA TAB (full Supabase)
+// ---
+async function renderFullData(){
+  const wrap=document.getElementById("full-data-rows")
+  try{
+    const rows=await sbGet("/time_snapshots","select=date,project_name,task_name,workspace_name,duration_secs,start_time&order=start_time.desc&limit=200")
+    document.getElementById("snapshot-count").textContent=`${rows?.length||0} entries saved`
+    if(!rows||!rows.length){wrap.innerHTML=`<div class="log-row" style="color:var(--text3);font-size:.78rem">No entries yet.</div>`;return}
+    wrap.innerHTML=""
+    rows.forEach(r=>{
+      const row=document.createElement("div")
+      row.className="project-row"
+      const ws=WS.find(w=>w.name===r.workspace_name)||WS[0]
+      const d=r.start_time?new Date(r.start_time).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}):r.date
+      row.innerHTML=`
+        <span class="project-name">${r.project_name||"—"}${r.task_name?` · <span style="color:var(--text3);font-weight:400">${r.task_name}</span>`:""}</span>
+        <span class="project-ws" style="background:${ws.tagBg};color:${ws.tagColor}">${r.workspace_name}</span>
+        <span class="project-dur">${fmt(r.duration_secs)}</span>
+        <span class="project-date">${d}</span>`
+      wrap.appendChild(row)
+    })
+  }catch(err){wrap.innerHTML=`<div class="log-row" style="color:var(--text3)">Error: ${err.message}</div>`}
+}
+
+// ---
+//  LOG TAB SWITCH
+// ---
+function switchLogTab(t){
+  document.querySelectorAll(".data-tab").forEach(b=>b.classList.remove("active"))
+  event.target.classList.add("active")
+  document.getElementById("recent-wrap").classList.toggle("hidden",t==="all")
+  document.getElementById("all-data-wrap").classList.toggle("visible",t==="all")
+}
+
+// ---
+//  VERSIONS (Supabase)
+// ---
+async function loadVersions(){
+  const list=document.getElementById("version-list")
+  try{
+    const rows=await sbGet("/app_versions","select=id,version_name,created_at&order=created_at.desc&limit=10")
+    if(!rows||!rows.length){list.innerHTML=`<div style="font-size:.75rem;color:var(--text3)">No versions saved yet.</div>`;return}
+    list.innerHTML=rows.map((v,i)=>`
+      <div class="ver-item">
+        <span class="ver-name">${v.version_name||"Unnamed"}</span>
+        ${i===0?`<span class="ver-current">current</span>`:""}
+        <span class="ver-date">${new Date(v.created_at).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"})}</span>
+        <button class="ver-restore" onclick="restoreVersion('${v.id}')">Restore</button>
+      </div>`).join("")
+  }catch(err){list.innerHTML=`<div style="font-size:.75rem;color:var(--text3)">Error: ${err.message}</div>`}
+}
+
+async function uploadVersion(){
+  const file=document.getElementById("html-upload").files[0]
+  if(!file)return
+  const msg=document.getElementById("ver-msg")
+  msg.style.display="inline";msg.style.color="var(--text3)";msg.textContent="Uploading…"
+  try{
+    const html=await file.text()
+    const now=new Date()
+    const auto=`v${now.getFullYear()}.${pad(now.getMonth()+1)}.${pad(now.getDate())} — ${now.toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"})}`
+    const name=document.getElementById("ver-name-input").value.trim()||auto
+    // keep max 10 — delete oldest if needed
+    const existing=await sbGet("/app_versions","select=id&order=created_at.desc&limit=100")
+    if(existing&&existing.length>=10){
+      const toDelete=existing.slice(9)
+      for(const v of toDelete)await sbFetch(`/app_versions?id=eq.${v.id}`,{method:"DELETE"})
+    }
+    await sbPost("/app_versions",{version_name:name,html_content:html})
+    msg.style.color="var(--sage)";msg.textContent='Saved as "'+name+'"'
+    document.getElementById("ver-name-input").value=""
+    loadVersions()
+  }catch(err){msg.style.color="#e11d48";msg.textContent="Error: "+err.message}
+}
+
+async function restoreVersion(id){
+  if(!confirm("Restore this version? It will reload the page with the saved HTML."))return
+  try{
+    const rows=await sbGet(`/app_versions`,`id=eq.${id}&select=html_content`)
+    if(!rows||!rows[0])return
+    const blob=new Blob([rows[0].html_content],{type:"text/html"})
+    const url=URL.createObjectURL(blob)
+    window.location.href=url
+  }catch(err){alert("Restore failed: "+err.message)}
+}
+
+// ---
+//  SETTINGS actions
+// ---
+function toggleTheme(){
+  const h=document.documentElement
+  const dark=h.getAttribute("data-theme")==="dark"
+  h.setAttribute("data-theme",dark?"light":"dark")
+  document.getElementById("theme-toggle").classList.toggle("on",!dark)
+  localStorage.setItem("tm_theme",dark?"light":"dark")
+}
+
+function setColor(c,el){
+  document.documentElement.setAttribute("data-color",c)
+  document.querySelectorAll(".swatch").forEach(s=>s.classList.remove("active"))
+  el.classList.add("active")
+  localStorage.setItem("tm_color",c)
+}
+
+function saveToken(){
+  const v=document.getElementById("token-input").value.trim()
+  if(!v)return
+  localStorage.setItem("tm_token",v)
+  const msg=document.getElementById("token-msg")
+  msg.style.display="block"
+  document.getElementById("token-input").value=""
+  setTimeout(()=>{msg.style.display="none";loadAll()},1500)
+}
+
+// ---
+//  TAB SWITCHING
+// ---
+function goTab(t){
+  currentTab=t
+  ;["dash","data","settings"].forEach(id=>{
+    document.getElementById("tab-"+id).style.display=id===t?"block":"none"
+  })
+  ;["dash","data","settings"].forEach(id=>{
+    document.getElementById("nb-"+id)?.classList.toggle("active",id===t)
+  })
+  document.getElementById("period-tabs").style.display=t==="dash"?"flex":"none"
+  if(t==="data")renderFullData()
+  if(t==="settings"){loadVersions();checkDBStatus()}
+}
+
+function setPeriod(p){
+  currentPeriod=p
+  document.querySelectorAll(".pill-tab").forEach(b=>b.classList.toggle("active",b.dataset.p===p))
+  loadAll()
+}
+
+// ---
+//  DB STATUS
+// ---
+async function checkDBStatus(){
+  const el=document.getElementById("db-status")
+  try{
+    await sbGet("/moods","limit=1")
+    el.textContent="Connected ✓";el.style.color="var(--sage)"
+  }catch{el.textContent="Error";el.style.color="#e11d48"}
+}
+
+// ---
+//  INIT
+// ---
+;(function init(){
+  // Theme
+  const theme=localStorage.getItem("tm_theme")||"light"
+  document.documentElement.setAttribute("data-theme",theme)
+  if(theme==="dark")document.getElementById("theme-toggle").classList.add("on")
+
+  // Color
+  const color=localStorage.getItem("tm_color")||"peach"
+  document.documentElement.setAttribute("data-color",color)
+  document.querySelector(`.swatch[data-c="${color}"]`)?.classList.add("active")
+
+  // Greeting
+  const h=new Date().getHours()
+  document.getElementById("greet-word").textContent=h<12?"morning":h<17?"afternoon":"evening"
+
+  // Mood date label
+  renderMoodPicker()
+
+  // Load data
+  loadAll()
+
+  // Mood popup check
+  check10PM()
+
+  // Welcome notif
+  addNotif("Dashboard ready","Your work data is loading from TMetric ✦",new Date().toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}))
+})()
+</script>
+</body>
+</html>
